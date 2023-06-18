@@ -1,5 +1,6 @@
 package com.curso.ecommerce.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.curso.ecommerce.model.Producto;
@@ -15,5 +16,6 @@ public interface ProductoService {
 	 //pemite eliminar
 	 public void Delete(Integer id);
 	 
-	 
+	 //permite mostrar todos los productos
+	 public List<Producto> findAll();
 }
