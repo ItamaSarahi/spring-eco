@@ -21,10 +21,11 @@ import com.curso.ecommerce.service.IOrdenService;
 import com.curso.ecommerce.service.IUsuarioService;
 import com.curso.ecommerce.service.ProductoService;
 
+import jakarta.servlet.http.HttpSession;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -58,7 +59,8 @@ public class HomeController {
 	private final Logger log = LoggerFactory.getLogger(HomeController.class);
 
 	@GetMapping("")
-	public String home(Model model) {
+	public String home(Model model, HttpSession session) {
+		log.info("Sesion del usuario:  {},", session.getAttribute("idusuario"));
 		model.addAttribute("productos", productoservice.findAll());
 		return "usuario/home";
 	}
@@ -156,9 +158,10 @@ public class HomeController {
 
 	// resumen de la orden: para ver los datos direcion,nombre, correo, etc
 	@GetMapping("/order")
-	public String order(Model model) {
+	public String order(Model model, HttpSession session) {
 
-		Usuario usuario = usuarioService.findById(1).get();
+		// obtener el id del usuario por la sesion:
+		Usuario usuario = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
 
 		// detalles y orden son globales a todos los metodos del controlador
 		model.addAttribute("cart", detalles);
@@ -169,7 +172,7 @@ public class HomeController {
 
 	// metodo que responde a una peticion de tipo getmapping
 	@GetMapping("/saveOrder")
-	public String saveOrder() {
+	public String saveOrder(HttpSession session) {
 		// obtener la fecha actual
 		Date fechaCreacion = new Date();
 		orden.setFechaCreacion(fechaCreacion);
@@ -179,13 +182,15 @@ public class HomeController {
 
 		// el usuario que hara referencia a esa orden, ya que el usuario debe de haberse
 		// logeado.
-		Usuario usuario = usuarioService.findById(1).get();
+		// obtener el id del usuario por la sesion:
+		Usuario usuario = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
+
 		orden.setUsuario(usuario);
 
 		// ya con los datos, guardamos la orden
 		ordenService.save(orden);
 
-		// tambien guardamos los detalles
+		// Tambien guardamos los detalles
 		// Objeto de tipo detalle Orden que lee la lista de detalles
 		for (DetalleOrden dt : detalles) {
 			dt.setOrden(orden);

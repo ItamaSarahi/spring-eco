@@ -20,7 +20,7 @@ import org.slf4j.*;
 public class UsuarioController {
 	// objeto para acceder al crus
 	@Autowired
-	IUsuarioService usuarioService;
+	private IUsuarioService usuarioService;
 
 	// variable de tipo log
 	private final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
@@ -57,7 +57,7 @@ public class UsuarioController {
 		Optional<Usuario> user = usuarioService.findByEmail(usuario.getEmail());
 
 		if (user.isPresent()) {
-			session.setAttribute("idUsuario", user.get().getId());
+			session.setAttribute("idusuario", user.get().getId());
 
 			if (user.get().getTipo().equals("Administrador")) {
 				return "redirect:/administrador";

@@ -17,8 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.curso.ecommerce.model.Producto;
 import com.curso.ecommerce.model.Usuario;
+import com.curso.ecommerce.service.IUsuarioService;
 import com.curso.ecommerce.service.ProductoService;
 import com.curso.ecommerce.service.UploadFileService;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/productos")
@@ -30,8 +32,11 @@ public class ProductoController {
 	// objeto de tipo producto
 	@Autowired
 	private ProductoService productoService;
-	
-	//variable para la imagen
+
+	@Autowired
+	private IUsuarioService usuarioService;
+
+	// variable para la imagen
 	@Autowired
 	private UploadFileService upload;
 
@@ -49,23 +54,24 @@ public class ProductoController {
 	}
 
 	@PostMapping("/save")
-	public String save(Producto producto, @RequestParam("img") MultipartFile file) throws IOException {
+	public String save(Producto producto, @RequestParam("img") MultipartFile file, HttpSession session)
+			throws IOException {
 		// Recibira un objeto de tipo producto, es un logger
 		LOGGER.info("Este es el objeto producto{}", producto);
-		Usuario u = new Usuario(1, "", "", "", "", "", "", "");
+		Usuario u = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
 		producto.setUsuario(u);
-		
-		//logica para subir la imagen al servidor y guardarla
-		
-		//cuando la imagen sea cargada por primera vez. Entra a este 
-		if(producto.getId()==null) {
-			String nombreImagen=upload.saveImage(file);
-			//aqui se guarda el nombre de la imagen del producto
+
+		// logica para subir la imagen al servidor y guardarla
+
+		// cuando la imagen sea cargada por primera vez. Entra a este
+		if (producto.getId() == null) {
+			String nombreImagen = upload.saveImage(file);
+			// aqui se guarda el nombre de la imagen del producto
 			producto.setImagen(nombreImagen);
-		}else {
-	
+		} else {
+
 		}
-		
+
 		productoService.save(producto);
 
 		// peticion directamente a productos. Lo que cargara es la vista show
@@ -93,51 +99,48 @@ public class ProductoController {
 
 	// metodo para actulizar, recibe como parametro un objeto de tipo producto
 	@PostMapping("/update")
-	public String update(Producto producto,@RequestParam("img") MultipartFile file) throws IOException {
-		
+	public String update(Producto producto, @RequestParam("img") MultipartFile file) throws IOException {
 
-		Producto p= new Producto();
-		p=productoService.get(producto.getId()).get();
-		
-		//cuando se modifica el producto, pero no se cambia la imagen
-		if(file.isEmpty()) {
+		Producto p = new Producto();
+		p = productoService.get(producto.getId()).get();
+
+		// cuando se modifica el producto, pero no se cambia la imagen
+		if (file.isEmpty()) {
 			producto.setImagen(p.getImagen());
-			
-		//cuando tambien se cambia la imagen cuando se edita el producto
-		}else {			
-	
-			//Si la imagen no es la imagen por defecto se va a eliminar
-			if(!p.getImagen().equals("default.jpg")){
+
+			// cuando tambien se cambia la imagen cuando se edita el producto
+		} else {
+
+			// Si la imagen no es la imagen por defecto se va a eliminar
+			if (!p.getImagen().equals("default.jpg")) {
 				upload.deleteImage(p.getImagen());
 			}
-			
-			String nombreImagen= upload.saveImage(file);
+
+			String nombreImagen = upload.saveImage(file);
 			producto.setImagen(nombreImagen);
 		}
-		
+
 		producto.setUsuario(p.getUsuario());
-		
+
 		productoService.Update(producto);
 		return "redirect:/productos";
 
 	}
-	
+
 	@GetMapping("/delete/{id}")
 	public String delete(@PathVariable Integer id) {
-		
-		//Eliminar desde el servidor la imagen
-		Producto p = new Producto();
-		p=productoService.get(id).get();
 
-		//Si la imagen no es la imagen por defecto se va a eliminar
-		if(!p.getImagen().equals("default.jpg")){
+		// Eliminar desde el servidor la imagen
+		Producto p = new Producto();
+		p = productoService.get(id).get();
+
+		// Si la imagen no es la imagen por defecto se va a eliminar
+		if (!p.getImagen().equals("default.jpg")) {
 			upload.deleteImage(p.getImagen());
 		}
-		
-		
+
 		productoService.Delete(id);
 		return "redirect:/productos";
 	}
-	
 
 }
