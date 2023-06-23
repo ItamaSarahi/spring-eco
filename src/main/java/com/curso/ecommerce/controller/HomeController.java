@@ -20,6 +20,7 @@ import com.curso.ecommerce.service.ProductoService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 
@@ -82,8 +83,15 @@ public class HomeController {
 		detalleOrden.setTotal(producto.getPrecio() * cantidad);
 		detalleOrden.setProducto(producto);
 
-		// se añade cada producto hacia la lista
-		detalles.add(detalleOrden);
+		// validar que el producto no se añada 2 veces
+		Integer idProducto = producto.getId();
+		boolean ingresado = detalles.stream().anyMatch(p -> p.getProducto().getId() == idProducto);
+
+		if (!ingresado) {
+			// se añade cada producto hacia la lista
+			detalles.add(detalleOrden);
+		}
+
 		sumaTotal = detalles.stream().mapToDouble(dt -> dt.getTotal()).sum();
 		orden.setTotal(sumaTotal);
 		model.addAttribute("cart", detalles);
@@ -101,12 +109,11 @@ public class HomeController {
 		// se quita el producto de la lista de detaller
 		for (DetalleOrden detalleOrden : detalles) {
 			// si encuentra un id si esta en detaller no lo añadira
-			if (detalleOrden.getProducto().getId() != id ) {
+			if (detalleOrden.getProducto().getId() != id) {
 				ordenesNueva.add(detalleOrden);
 			}
 		}
 
-		
 		// poner la nueva lista con los productos restantes
 		detalles = ordenesNueva;
 
@@ -118,5 +125,26 @@ public class HomeController {
 
 		return "usuario/carrito";
 	}
+
+	// metodo para llevar el carrito a cualquier lado
+
+	@GetMapping("/getCart")
+	public String getCart(Model model) {
+		// detalles y orden son globales a todos los metodos del controlador
+		model.addAttribute("cart", detalles);
+		model.addAttribute("Orden", orden);
+
+		return "/usuario/carrito";
+	}
+	
+	
+	//resumen de la orden: para ver los datos direcion,nombre, correo, etc
+	@GetMapping("/order")
+	public String order() {
+		return "usuario/resumenorden";
+	}
+		
+	
+	
 
 }
