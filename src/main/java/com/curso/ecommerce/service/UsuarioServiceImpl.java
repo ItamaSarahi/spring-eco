@@ -9,7 +9,7 @@ import com.curso.ecommerce.model.Usuario;
 import com.curso.ecommerce.repository.IUsuarioRepository;
 
 @Service
-public class UsuarioServiceImpl implements IUsuarioService{
+public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Autowired
 	private IUsuarioRepository usuarioRepository;
@@ -20,5 +20,17 @@ public class UsuarioServiceImpl implements IUsuarioService{
 		return usuarioRepository.findById(id);
 	}
 
+	// guardamos el objeto usuario
+	@Override
+	public Usuario save(Usuario usuario) {
+		// TODO Auto-generated method stub
+		return usuarioRepository.save(usuario);
+	}
+
+	@Override
+	public Optional<Usuario> findByEmail(String email) {
+
+		return usuarioRepository.findByEmail(email);
+	}
 
 }
