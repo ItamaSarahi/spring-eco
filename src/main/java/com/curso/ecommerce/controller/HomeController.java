@@ -1,6 +1,7 @@
 package com.curso.ecommerce.controller;
 
 import org.slf4j.LoggerFactory;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,13 +15,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.curso.ecommerce.model.DetalleOrden;
 import com.curso.ecommerce.model.Orden;
 import com.curso.ecommerce.model.Producto;
-import com.curso.ecommerce.repository.ProductoRepository;
+import com.curso.ecommerce.model.Usuario;
+import com.curso.ecommerce.service.IDetalleOrdenService;
+import com.curso.ecommerce.service.IOrdenService;
+import com.curso.ecommerce.service.IUsuarioService;
 import com.curso.ecommerce.service.ProductoService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 
@@ -30,6 +35,18 @@ import org.slf4j.Logger;
 public class HomeController {
 	@Autowired
 	private ProductoService productoservice;
+
+	// variable para acceder al crud de la orden
+	@Autowired
+	private IOrdenService ordenService;
+
+	// variable para acceder al crud del dettale de la orden
+	@Autowired
+	private IDetalleOrdenService detalleOrdenService;
+
+	// objeto de tipo usuario
+	@Autowired
+	private IUsuarioService usuarioService;
 
 	// para almacenar los detalles de la orden
 	List<DetalleOrden> detalles = new ArrayList<DetalleOrden>();
@@ -136,15 +153,70 @@ public class HomeController {
 
 		return "/usuario/carrito";
 	}
-	
-	
-	//resumen de la orden: para ver los datos direcion,nombre, correo, etc
+
+	// resumen de la orden: para ver los datos direcion,nombre, correo, etc
 	@GetMapping("/order")
-	public String order() {
+	public String order(Model model) {
+
+		Usuario usuario = usuarioService.findById(1).get();
+
+		// detalles y orden son globales a todos los metodos del controlador
+		model.addAttribute("cart", detalles);
+		model.addAttribute("Orden", orden);
+		model.addAttribute("usuario", usuario);
 		return "usuario/resumenorden";
 	}
-		
-	
-	
+
+	// metodo que responde a una peticion de tipo getmapping
+	@GetMapping("/saveOrder")
+	public String saveOrder() {
+		// obtener la fecha actual
+		Date fechaCreacion = new Date();
+		orden.setFechaCreacion(fechaCreacion);
+
+		// dar el numero de orden
+		orden.setNumero(ordenService.generarNumeroOrden());
+
+		// el usuario que hara referencia a esa orden, ya que el usuario debe de haberse
+		// logeado.
+		Usuario usuario = usuarioService.findById(1).get();
+		orden.setUsuario(usuario);
+
+		// ya con los datos, guardamos la orden
+		ordenService.save(orden);
+
+		// tambien guardamos los detalles
+		// Objeto de tipo detalle Orden que lee la lista de detalles
+		for (DetalleOrden dt : detalles) {
+			dt.setOrden(orden);
+			detalleOrdenService.save(dt);
+		}
+
+		// limpiar los valores que tiene el detalle y la orden.
+		orden = new Orden();
+		detalles.clear();
+
+		// hacemos redirect hacia la home
+		return "redirect:/";
+
+	}
+
+	// metodo para la busqueda de los produtos
+	@PostMapping("/search")
+	public String searchProducto(@RequestParam String nombre, Model model) {
+		log.info("Nombre del producto: {} ", nombre);
+		// filtra por un predicado: el predicado es lo que queremos obtener.
+		// Obtiene los productos hace un string. A traves de una funcion anonima trae el
+		// nombre del producto y el metodo contains le pasamos la secuencia de
+		// caracteres, para que si el producto contiene alguna de esas partes nos
+		// devuelva una lista
+		List<Producto> productos = productoservice.findAll().stream().filter(p -> p.getNombre().contains(nombre))
+				.collect(Collectors.toList());
+
+		// parametros: nombre de la lista con la qe va a recibir
+		model.addAttribute("productos", productos);
+
+		return "usuario/home";
+	}
 
 }
