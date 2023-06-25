@@ -2,11 +2,13 @@ package com.curso.ecommerce.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.curso.ecommerce.model.Orden;
+import com.curso.ecommerce.model.Usuario;
 import com.curso.ecommerce.repository.IOrdenRepository;
 
 @Service
@@ -71,6 +73,18 @@ public class OrdenServiceImpl implements IOrdenService {
 		}
 
 		return numeroConcatenado;
+	}
+
+	//metodo para buscar la orden por usuario.
+	@Override
+	public List<Orden> findByUsuario(Usuario usuario) {
+	
+		return ordenRepository.findByUsuario(usuario);
+	}
+
+	@Override
+	public Optional<Orden> findById(Integer id) {
+		return ordenRepository.findById(id);
 	}
 
 }

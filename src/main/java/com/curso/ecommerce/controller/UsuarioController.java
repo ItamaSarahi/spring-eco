@@ -2,15 +2,20 @@ package com.curso.ecommerce.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.curso.ecommerce.model.Orden;
 import com.curso.ecommerce.model.Usuario;
+import com.curso.ecommerce.service.IOrdenService;
 import com.curso.ecommerce.service.IUsuarioService;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.*;
@@ -24,6 +29,9 @@ public class UsuarioController {
 
 	// variable de tipo log
 	private final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
+
+	@Autowired
+	private IOrdenService ordenService;
 
 	// metodo que permita mostrar la pagina del registro
 	@GetMapping("/registro")
@@ -72,4 +80,35 @@ public class UsuarioController {
 		return "redirect:/";
 	}
 
+	// metodo para obtener compras
+	@GetMapping("/compras")
+	public String obtenerCompras(Model model, HttpSession session) {
+		model.addAttribute("sesion", session.getAttribute("idusuario"));
+		Usuario usuario = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
+		List<Orden> ordenes = ordenService.findByUsuario(usuario);
+		model.addAttribute("ordenes", ordenes);
+		return "usuario/compras";
+	}
+
+	// metodo para obtener el detalle de la compra mediante el id
+	@GetMapping("/detalle/{id}")
+	// se le pasa como argumento una path variable para
+	public String detalleCompra(@PathVariable Integer id, HttpSession session, Model model) {
+		// se pasa la sesion. para validar si es que la sesion existe
+		LOGGER.info("Id de la orden : {}",id);
+		
+		Optional<Orden> orden= ordenService.findById(id);
+		
+		model.addAttribute("detalles",orden.get().getDetalle());
+		model.addAttribute("sesion", session.getAttribute("idusuario"));
+
+		return "usuario/detallecompra";
+	}
+	
+	//metodo para poder cerrar la sesion del usuario, recibe la sesion 
+	@GetMapping("/cerrar")
+	public String cerrarSesion(HttpSession session) {
+		session.removeAttribute("idusuario");
+		return "redirect:/";
+	}
 }
