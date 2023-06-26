@@ -26,9 +26,6 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/productos")
 public class ProductoController {
 
-	// variable de prueba (?
-	private final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
-
 	// objeto de tipo producto
 	@Autowired
 	private ProductoService productoService;
@@ -57,7 +54,6 @@ public class ProductoController {
 	public String save(Producto producto, @RequestParam("img") MultipartFile file, HttpSession session)
 			throws IOException {
 		// Recibira un objeto de tipo producto, es un logger
-		LOGGER.info("Este es el objeto producto{}", producto);
 		Usuario u = usuarioService.findById(Integer.parseInt(session.getAttribute("idusuario").toString())).get();
 		producto.setUsuario(u);
 
@@ -89,8 +85,6 @@ public class ProductoController {
 		// Trae de vuelta el producto buscado
 		producto = optionalProducto.get();
 
-		// Esto es una variable de logeo
-		LOGGER.info("Producto buscado: {}", producto);
 
 		// model lleva datos desde el backend hasta la vista
 		model.addAttribute("producto", producto);

@@ -1,6 +1,8 @@
 package com.curso.ecommerce.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,10 +30,11 @@ public class UsuarioController {
 	private IUsuarioService usuarioService;
 
 	// variable de tipo log
-	private final Logger LOGGER = LoggerFactory.getLogger(ProductoController.class);
 
 	@Autowired
 	private IOrdenService ordenService;
+
+	PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();;
 
 	// metodo que permita mostrar la pagina del registro
 	@GetMapping("/registro")
@@ -44,8 +47,7 @@ public class UsuarioController {
 
 	public String save(Usuario usuario) {
 		// hacer una impresion de los datos del usuario
-		LOGGER.info("Usuario registro: {}", usuario);
-
+		usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 		usuario.setTipo("USER");
 		usuarioService.save(usuario);
 		return "redirect:/";
@@ -74,7 +76,7 @@ public class UsuarioController {
 				return "redirect:/";
 			}
 		} else {
-			LOGGER.info("Usuario no existe");
+		
 		}
 
 		return "redirect:/";
@@ -95,17 +97,16 @@ public class UsuarioController {
 	// se le pasa como argumento una path variable para
 	public String detalleCompra(@PathVariable Integer id, HttpSession session, Model model) {
 		// se pasa la sesion. para validar si es que la sesion existe
-		LOGGER.info("Id de la orden : {}",id);
-		
-		Optional<Orden> orden= ordenService.findById(id);
-		
-		model.addAttribute("detalles",orden.get().getDetalle());
+
+		Optional<Orden> orden = ordenService.findById(id);
+
+		model.addAttribute("detalles", orden.get().getDetalle());
 		model.addAttribute("sesion", session.getAttribute("idusuario"));
 
 		return "usuario/detallecompra";
 	}
-	
-	//metodo para poder cerrar la sesion del usuario, recibe la sesion 
+
+	// metodo para poder cerrar la sesion del usuario, recibe la sesion
 	@GetMapping("/cerrar")
 	public String cerrarSesion(HttpSession session) {
 		session.removeAttribute("idusuario");

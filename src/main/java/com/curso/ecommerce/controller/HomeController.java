@@ -55,12 +55,9 @@ public class HomeController {
 	// datos de la orden
 	Orden orden = new Orden();
 
-	// variable de tipo logger
-	private final Logger log = LoggerFactory.getLogger(HomeController.class);
 
 	@GetMapping("")
 	public String home(Model model, HttpSession session) {
-		log.info("Sesion del usuario:  {},", session.getAttribute("idusuario"));
 		model.addAttribute("productos", productoservice.findAll());
 
 		// session
@@ -72,7 +69,6 @@ public class HomeController {
 	// metodo del boton del producto
 	@GetMapping("productohome/{id}")
 	public String productoHome(@PathVariable Integer id, Model model) {
-		log.info("Id producto enviado como parametro{}", id);
 		Producto producto = new Producto();
 
 		// Se buscara el producto en la base de datos a traves del producto service
@@ -95,9 +91,6 @@ public class HomeController {
 		double sumaTotal = 0;
 
 		Optional<Producto> optionalProducto = productoservice.get(id);
-
-		log.info("El producto añadido: {}", optionalProducto.get());
-		log.info("Cantidad: {}", cantidad);
 		producto = optionalProducto.get();
 
 		detalleOrden.setCantidad(cantidad);
@@ -216,8 +209,7 @@ public class HomeController {
 	// metodo para la busqueda de los produtos
 	@PostMapping("/search")
 	public String searchProducto(@RequestParam String nombre, Model model) {
-		log.info("Nombre del producto: {} ", nombre);
-		// filtra por un predicado: el predicado es lo que queremos obtener.
+// filtra por un predicado: el predicado es lo que queremos obtener.
 		// Obtiene los productos hace un string. A traves de una funcion anonima trae el
 		// nombre del producto y el metodo contains le pasamos la secuencia de
 		// caracteres, para que si el producto contiene alguna de esas partes nos
